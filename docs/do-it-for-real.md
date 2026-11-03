@@ -1,10 +1,14 @@
 # Do it for real
 
-Bringing a real service up on your own goatnet. The scenarios in this repo show the same
+Bringing a real service up on a goatnet. The scenarios in this repo show the same
 path on a laptop with a simulated issuer; this page is the live version, and every step on
-it needs a running goatnet and its platform team. To have a goatnet of your own, start
-from goatcore's [goatlite quickstart](https://github.com/usareur-af/goatcore/blob/main/docs/tutorials/00-goatlite.md)
-or the example environment [`hello-galaxy-goatenv`](https://github.com/usareur-af/hello-galaxy-goatenv).
+it needs a running goatnet and its platform team. Any appropriate goatnet you have access to
+works:
+EFDI, the shared sandbox goatnet that partners are onboarded to (if you are onboarded to it); <!-- oss-allow: operator-approved public example goatnet -->
+a goatlite you stand up yourself (goatcore's
+[goatlite quickstart](https://github.com/usareur-af/goatcore/blob/main/docs/tutorials/00-goatlite.md)
+or the example environment [`hello-galaxy-goatenv`](https://github.com/usareur-af/hello-galaxy-goatenv)),
+in which case you are also its platform team; or another goatnet you have access to.
 The platform side is goatcore's
 [external service golden path](https://github.com/usareur-af/goatcore/blob/main/docs/design/external-service-golden-path.md)
 and its play `ops/ansible/external-service.yml`.
@@ -32,7 +36,7 @@ when it fails. The fix is always the host's membership, never the people's.
 ## 2. Write the declaration — *you*
 
 Copy [`examples/hello-external.zagros.yml`](../examples/hello-external.zagros.yml), rename it
-for your goatnet and edit it. Set `backend_url` to your host's mesh IP and the port your fence binds. Keep
+for the goatnet you are using and edit it. Set `backend_url` to your host's mesh IP and the port your fence binds. Keep
 `retire_after` if the service is temporary.
 
 ```bash

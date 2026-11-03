@@ -60,7 +60,11 @@ Nothing here talks to a goatnet. The live steps are in
 ## Using it for a real service
 
 Everything above runs on your laptop against examples. When your service is ready for
-a goatnet, the same file is what you hand its platform team:
+a goatnet, the same file is what you hand its platform team. The goatnet can be
+EFDI, the shared sandbox goatnet that partners are onboarded to (if you are onboarded to it); <!-- oss-allow: operator-approved public example goatnet -->
+a goatlite you stand up yourself (goatcore's
+[goatlite quickstart](https://github.com/usareur-af/goatcore/blob/main/docs/tutorials/00-goatlite.md));
+or another goatnet you have access to.
 
 1. Copy a file from [`examples/`](examples/), rename it `<name>.<goatnet>.yml`, edit it,
    and run `tools/validate-declaration.py` on it.
