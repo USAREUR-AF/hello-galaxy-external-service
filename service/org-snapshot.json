@@ -1,0 +1,11 @@
+{
+  "_about": "A snapshot of the goatnet's organisation catalog as the service owner would export it from the goat registry. generated_at is re-stamped by the scenarios; a snapshot older than HELLO_SNAPSHOT_MAX_AGE_SECONDS turns vendor auto-roster off (fail closed).",
+  "generated_at": "2026-09-11T00:00:00Z",
+  "source": "goat registry export (SIMULATED here)",
+  "orgs": [
+    {"id": "org-acme-drones", "name": "Acme Drones", "kind": "vendor", "status": "active"},
+    {"id": "org-bluefield-sensors", "name": "Bluefield Sensors", "kind": "vendor", "status": "active"},
+    {"id": "org-old-radios", "name": "Old Radios", "kind": "vendor", "status": "inactive"},
+    {"id": "org-exercise-office", "name": "Exercise office", "kind": "unit", "status": "active"}
+  ]
+}

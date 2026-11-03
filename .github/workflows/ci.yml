@@ -1,0 +1,62 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-structure-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck the scripts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          # SC1090/SC1091: drivers source the lib at runtime.
+          # SC2034: cross-file globals set in the lib, read by sourcing scripts.
+          shellcheck -e SC1090,SC1091,SC2034 \
+            lib/hello-external.sh scenarios/*/run.sh tools/*.sh report/generate-report.sh
+
+      - name: every scenario has a README and an executable run.sh
+        run: |
+          rc=0
+          for d in scenarios/*/; do
+            [ -f "$d/README.md" ] || { echo "missing README: $d"; rc=1; }
+            [ -f "$d/run.sh" ]   || { echo "missing run.sh: $d"; rc=1; }
+            [ -x "$d/run.sh" ]   || { echo "not executable: $d/run.sh"; rc=1; }
+            bash -n "$d/run.sh"  || { echo "syntax error: $d/run.sh"; rc=1; }
+          done
+          for f in tools/*.sh report/generate-report.sh tools/validate-declaration.py local-issuer/issuer.py service/hello_service.py; do
+            [ -x "$f" ] || { echo "not executable: $f"; rc=1; }
+          done
+          exit $rc
+
+      - name: python compiles
+        run: |
+          rc=0
+          for f in $(git ls-files '*.py'); do python3 -m py_compile "$f" || rc=1; done
+          exit $rc
+
+      - name: install the laptop dependencies
+        run: python3 -m pip install --quiet -r requirements.txt
+
+      - name: the declaration is accepted and the preview renders
+        run: python3 tools/validate-declaration.py examples/hello-external.zagros.yml --site-id zagros
+
+      - name: scenario 01 — declare (accept + three refusals)
+        run: NO_COLOR=1 bash scenarios/01-declare/run.sh
+
+      - name: scenario 02 — sign in and authorize, end to end
+        run: NO_COLOR=1 bash scenarios/02-sign-in-and-authorize/run.sh
+
+      - name: scenario 03 — withdraw + the footprint check
+        run: NO_COLOR=1 bash scenarios/03-withdraw/run.sh
+
+      - name: scenario 04 — a platform with several endpoints
+        run: NO_COLOR=1 bash scenarios/04-partner-platform/run.sh
+
+      - name: the report generates from the captures
+        run: |
+          NO_COLOR=1 bash report/generate-report.sh
+          test -s report/report.html

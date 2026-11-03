@@ -1,0 +1,4 @@
+# Laptop dependencies for the local issuer, the hello service and the tools.
+PyJWT>=2.8,<3
+cryptography>=42
+PyYAML>=6,<7

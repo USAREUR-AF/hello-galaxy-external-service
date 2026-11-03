@@ -1,0 +1,30 @@
+# hello on the ZAGROS goatnet — an EXTERNAL SERVICE declaration (goat ADR 1178).
+#
+# This one file is the hello service's whole goatnet-side footprint. It is named
+# external-service-hello-external.yml, and the file name and the mapping name must
+# agree: hello-external <-> external_service_hello_external. Hand it to the platform
+# team to apply; withdraw it by setting `enabled: false` below and saying so.
+#
+# The backend address is a documentation example, not a real host. The service binds
+# its MESH IP, never 0.0.0.0.
+---
+external_service_hello_external:
+  name: hello                                  # -> https://hello.zagros.<zone>; one lowercase DNS label
+  backend_url: "http://100.127.0.76:9402"     # the host's MESH IP + the port the service binds
+  health_path: /healthz                        # open, no session; the pre-flight and status page probe it
+  door: authenticated                          # what the service's OWN fence decides (closed set)
+  client:                                      # the goatnet registers this OAuth2 client for you
+    id: oauth2-proxy-hello-external
+    secret_env: HELLO_OAUTH2_CLIENT_SECRET     # the SAME variable configures the service's fence
+    scopes: [openid, profile, email, groups]
+    redirect_path: /oauth2/callback
+    token_lifespan: 8h                         # pinned to the fence's cookie lifetime (no refresh token)
+  status:                                      # the status-page row
+    name: "Hello external service"
+    desc: "Demo relying party for the external service golden path. Nothing else depends on it."
+    access: public                             # any authenticated identity gets past the door
+    category: exercise
+    icon: info
+  owner: hello-galaxy maintainers (usareur-af/hello-galaxy-external-service)
+  retire_after: "2035-12-31"                   # TEMPORARY: the footprint check is strict; it cannot be applied after this date
+  enabled: true                                # false = withdrawn

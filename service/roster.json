@@ -1,0 +1,7 @@
+{
+  "_about": "The hello service's OWN authorization records. A goatnet identity that is not here is refused with 403 unless the vendor auto-roster rule admits it. Addresses are illustrative.",
+  "entries": [
+    {"email": "vendor.one@acme-drones.example", "org": "org-acme-drones", "role": "vendor-engineer"},
+    {"email": "ops.lead@exercise-office.example", "org": "org-exercise-office", "role": "owner"}
+  ]
+}

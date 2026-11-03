@@ -1,0 +1,15 @@
+# runtime state written by the scenarios — never committed
+.run/
+
+# report run captures (the report.html itself IS committed as a sample artifact)
+report/.captures/
+*.log
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# os noise
+.DS_Store

@@ -1,0 +1,653 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hello-galaxy-external-service — the external service golden path, run</title>
+<style>
+:root{--bg:#0e1116;--panel:#161b22;--panel2:#1c232c;--ink:#f0f4f8;--dim:#b3bec9;--line:#2a323c;
+  --accent:#f5b14c;--green:#4cd964;--red:#ff6b6b;--blue:#79b8ff;
+  --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+.wrap{max-width:980px;margin:0 auto;padding:40px 24px 80px}
+header{padding:20px 0 12px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.kick{color:var(--accent);font:600 13px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:30px;margin:.3em 0 .2em}
+h2{font-size:22px;margin:2.2em 0 .5em;padding-top:.4em;border-top:1px solid var(--line)}
+.lede{color:var(--dim);font-size:17px;max-width:72ch}
+.meta{color:var(--dim);font:13px/1.5 var(--mono);margin-top:12px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font:600 12px var(--mono);border:1px solid var(--line);background:var(--panel)}
+.badge.ok{color:var(--green);border-color:#1f6f3f}.badge.bad{color:var(--red);border-color:#7f2a2a}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(4,1fr);margin:20px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .n{font:700 24px var(--mono)}.card .l{color:var(--dim);font-size:12.5px;margin-top:3px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font:600 12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+td.mono,code{font-family:var(--mono)}code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:13px}
+td.ok{color:var(--green);font-weight:700}td.bad{color:var(--red);font-weight:700}
+.tick{color:var(--green);font-weight:700}.cross{color:var(--red);font-weight:700}
+.term{background:#0a0d12;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto}
+.term pre{margin:0;font:13px/1.5 var(--mono);color:#d6dee6;white-space:pre-wrap;word-break:break-word}
+details{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:12px 0;padding:4px 16px}
+summary{cursor:pointer;font-weight:600;padding:10px 0}
+.pill{font:600 11px var(--mono);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.real{color:var(--green);background:#10261a;border:1px solid #1f6f3f}
+.pill.else{color:var(--blue);background:#0f1f33;border:1px solid #2a4f7f}
+.pill.sim{color:var(--accent);background:#241c0e;border:1px solid #6f561f}
+.note{color:var(--dim);font-size:14px;border-left:3px solid var(--accent);padding:6px 0 6px 14px;margin:14px 0}
+a{color:var(--blue)}
+@media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="kick">hello-galaxy · usareur-af</div>
+  <h1>The external service golden path, run</h1>
+  <p class="lede">A service the goatnet does not run borrows its sign-in from one declaration file,
+  verifies the tokens itself, authorizes from its own roster, and is withdrawn the same way with
+  nothing left behind. Everything below was captured from a laptop run with a simulated
+  issuer and the real service code.</p>
+  <div class="meta">generated 2026-11-03 21:18:53Z · <span class="badge ok">39 checks passed, 0 failed</span></div>
+</header>
+
+<div class="grid">
+  <div class="card"><div class="n">1</div><div class="l">declaration file per service per goatnet</div></div>
+  <div class="card"><div class="n">10</div><div class="l">relying-party rules exercised with real tokens</div></div>
+  <div class="card"><div class="n">0</div><div class="l">assertions that did not hold</div></div>
+  <div class="card"><div class="n">0</div><div class="l">other files the service may be named in</div></div>
+</div>
+
+<h2>1. Declare</h2>
+<p>One YAML file, <code>examples/hello-external.zagros.yml</code>, is the whole goatnet-side footprint.
+<code>tools/validate-declaration.py</code> applies the goatnet's own rules and previews what it
+derives: the hostname, the issuer with its trailing slash, the JWKS URL, the OAuth2 client, the edge
+route and certificate name, the DNS record and the status row. Three refusals follow: a LAN backend, a door
+outside the closed set, a passed <code>retire_after</code>.</p>
+<p>Scenario result: <code>result ─ 4 passed, 0 failed</code></p>
+<details><summary>Full captured output — 01-declare</summary><div class="term"><pre>
+════════════════════════════════════════════════════════════
+  Declare — one file is the whole goatnet-side footprint
+════════════════════════════════════════════════════════════
+  The rules it is checked against, and what the goatnet derives from it.
+  mode: laptop-local (simulated issuer, real service code)
+
+── Step 1 ─ The declaration
+$ cat examples/hello-external.zagros.yml
+    │ external_service_hello_external:
+    │   name: hello                                  # -&gt; https://hello.zagros.&lt;zone&gt;; one lowercase DNS label
+    │   backend_url: "http://100.127.0.76:9402"     # the host's MESH IP + the port the service binds
+    │   health_path: /healthz                        # open, no session; the pre-flight and status page probe it
+    │   door: authenticated                          # what the service's OWN fence decides (closed set)
+    │   client:                                      # the goatnet registers this OAuth2 client for you
+    │     id: oauth2-proxy-hello-external
+    │     secret_env: HELLO_OAUTH2_CLIENT_SECRET     # the SAME variable configures the service's fence
+    │     scopes: [openid, profile, email, groups]
+    │     redirect_path: /oauth2/callback
+    │     token_lifespan: 8h                         # pinned to the fence's cookie lifetime (no refresh token)
+    │   status:                                      # the status-page row
+    │     name: "Hello external service"
+    │     desc: "Demo relying party for the external service golden path. Nothing else depends on it."
+    │     access: public                             # any authenticated identity gets past the door
+    │     category: exercise
+    │     icon: info
+    │   owner: hello-galaxy maintainers (usareur-af/hello-galaxy-external-service)
+    │   retire_after: "2035-12-31"                   # TEMPORARY: the footprint check is strict; it cannot be applied after this date
+    │   enabled: true                                # false = withdrawn
+
+── Step 2 ─ Validate it the way the goatnet does, and preview what it derives
+$ tools/validate-declaration.py examples/hello-external.zagros.yml --site-id zagros
+    │ declaration: examples/hello-external.zagros.yml
+    │ mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+    │ verdict:     ACCEPTED for state=present (well-formed, enabled, retire_after 2035-12-31 not passed)
+    │ 
+    │ PREVIEW of what the goatnet derives (it does the real rendering; site=zagros, zone=&lt;zone&gt;):
+    │   what the goatnet prints back, for you to configure the service from:
+    │     hostname:     https://hello.zagros.&lt;zone&gt;
+    │     issuer:       https://oauth2.zagros.&lt;zone&gt;/   (trailing slash is load-bearing)
+    │     jwks:         https://oauth2.zagros.&lt;zone&gt;/.well-known/jwks.json
+    │     issuer pin:   oauth2.zagros.&lt;zone&gt; -&gt; &lt;edge mesh ip&gt;   (hosts on the mesh without mesh DNS)
+    │     client_id:    oauth2-proxy-hello-external
+    │     redirect_uri: https://hello.zagros.&lt;zone&gt;/oauth2/callback
+    │     secret:       $HELLO_OAUTH2_CLIENT_SECRET  (same variable on both sides)
+    │     door:         authenticated   (what the service's own fence decides; recorded, not enforced here)
+    │   the OAuth2 client the goatnet registers for you (secret read from $HELLO_OAUTH2_CLIENT_SECRET):
+    │     client_id=oauth2-proxy-hello-external client_name='oauth2-proxy-hello-external (zagros)' grant_types=['authorization_code'] response_types=[code]
+    │     scope='openid profile email groups' redirect_uris=[https://hello.zagros.&lt;zone&gt;/oauth2/callback]
+    │     token_endpoint_auth_method=client_secret_post skip_consent=true access_token_strategy=jwt audience=[oauth2-proxy-hello-external]
+    │     lifespans: id_token=8h access_token=8h  (pinned; your fence holds no refresh token)
+    │   the goatnet's edge (one route carries every name):
+    │     certificate:  *.zagros.&lt;zone&gt;  (covers every flat name; nothing added for them)
+    │     route   ext-hello: priority 50, matches Host(`hello.zagros.&lt;zone&gt;`), mesh-only, certificate issued by the goatnet
+    │     backend ext-hello: http://100.127.0.76:9402
+    │   the mesh DNS records (edge mode — every name resolves to the goatnet's edge):
+    │     &lt;edge mesh ip&gt; hello.zagros.&lt;zone&gt;
+    │   the status-page rows, on the goatnet's External services page under "hello-galaxy maintainers (usareur-af/hello-galaxy-external-service)"
+    │     (one per listed hostname; a row the goatnet already publishes for a name wins):
+    │     "hello|Hello external service|hello.zagros.&lt;zone&gt;|external|||/healthz|ui|public|exercise|info|Demo relying party for the external service golden path. Nothing else depends on it.||true|2|3"
+    │   the footprint check — TEMPORARY (retire_after 2035-12-31): the footprint check FAILS on any of these outside the declaration:
+    │     tokens: ['hello-external', 'hello_external', 'external_service_hello_external']
+declaration: examples/hello-external.zagros.yml
+mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+verdict:     ACCEPTED for state=present (well-formed, enabled, retire_after 2035-12-31 not passed)
+  ✓ the declaration is accepted for state=present
+  ⓘ honesty: the preview reproduces the shapes of what the goatnet publishes — the lines you
+  ⓘ honesty: configure from, the edge route, the DNS record, the status row. It renders none.
+
+── Step 3 ─ A LAN backend is refused (the mesh is the outer gate)
+$ sed 's#100.127.0.76#192.168.1.50#' ... | tools/validate-declaration.py
+    │ declaration: .run/decl-lan-backend.yml
+    │ mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+    │ verdict:     REFUSED for state=present
+    │ reason:      external_service_hello_external: `name` is one lowercase DNS label; every entry of `hostnames` (default [name]) is this service's own -- `&lt;name&gt;`, `&lt;name&gt;-&lt;surface&gt;`, or nested one level as `&lt;surface&gt;.&lt;name&gt;` (so `api.northwind` and `northwind-api`, never `api`, `demo.console.northwind` or another service's name) -- with no label over 63 characters; `tls` is edge or partner; in edge mode `backend_url` is http(s)://&lt;MESH IP&gt;:&lt;port&gt; (a 100.64/10 address — the mesh is the outer gate, never a LAN or public address); in partner mode `mesh_ip` is your host's 100.64/10 address, you terminate TLS yourself, and `acme_delegate` is a hostname in a zone YOU control, outside the goatnet's zone (edge mode names none); `mesh_peer`, when set, is your NetBird peer name; `door` is one of ['group-gated', 'authenticated', 'in-app', 'mesh-only']; `owner` is set; a `client:` block needs `id` and `secret_env`; `retire_after` is YYYY-MM-DD.
+  ✓ backend_url 192.168.1.50 is refused
+
+── Step 4 ─ A door outside the closed set is refused
+$ sed 's#door: authenticated#door: open#' ... | tools/validate-declaration.py
+    │ declaration: .run/decl-bad-door.yml
+    │ mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+    │ verdict:     REFUSED for state=present
+    │ reason:      external_service_hello_external: `name` is one lowercase DNS label; every entry of `hostnames` (default [name]) is this service's own -- `&lt;name&gt;`, `&lt;name&gt;-&lt;surface&gt;`, or nested one level as `&lt;surface&gt;.&lt;name&gt;` (so `api.northwind` and `northwind-api`, never `api`, `demo.console.northwind` or another service's name) -- with no label over 63 characters; `tls` is edge or partner; in edge mode `backend_url` is http(s)://&lt;MESH IP&gt;:&lt;port&gt; (a 100.64/10 address — the mesh is the outer gate, never a LAN or public address); in partner mode `mesh_ip` is your host's 100.64/10 address, you terminate TLS yourself, and `acme_delegate` is a hostname in a zone YOU control, outside the goatnet's zone (edge mode names none); `mesh_peer`, when set, is your NetBird peer name; `door` is one of ['group-gated', 'authenticated', 'in-app', 'mesh-only']; `owner` is set; a `client:` block needs `id` and `secret_env`; `retire_after` is YYYY-MM-DD.
+  ✓ door: open is refused (closed set: group-gated, authenticated, in-app, mesh-only)
+
+── Step 5 ─ A retire_after in the past is refused for present
+$ sed 's#retire_after: ...#retire_after: "2020-01-01"#' ... | tools/validate-declaration.py
+    │ declaration: .run/decl-retired.yml
+    │ mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+    │ verdict:     REFUSED for state=present
+    │ reason:      external_service_hello_external declares retire_after 2020-01-01, which has passed. Set enabled: false and ask for it to be withdrawn, or move the date by agreement with the owner.
+  ✓ a passed retire_after is refused for state=present
+
+── Step 6 ─ What you do next, on a real goatnet
+  • hand this file to the platform team — it is the whole goatnet-side change
+  • put the client secret in your own deploy environment, under the name you declared
+  • they apply it: one command, and the goatnet publishes the name
+  • configure your service from the lines it prints back — docs/do-it-for-real.md
+
+Next: bash scenarios/02-sign-in-and-authorize/run.sh
+
+── result ─ 4 passed, 0 failed</pre></div></details>
+
+<h2>2. Sign in and authorize</h2>
+<p>The provider authenticates, the service authorizes. A simulated issuer signs RS256 tokens; the real
+service code decides on each one. Every refusal names who can fix it.</p>
+<table>
+<tr><th>Step</th><th>Status</th><th>Held?</th><th>What it shows</th></tr>
+<tr><td class="mono">(a)</td><td class="mono ok">200</td><td><span class="tick">as expected</span></td><td>rostered, verified: admitted; /api/me names the principal from the ROSTER row</td></tr>
+<tr><td class="mono">(b)</td><td class="mono ok">403</td><td><span class="tick">as expected</span></td><td>an unverified email is refused even though the person is rostered; the fix is at the identity provider</td></tr>
+<tr><td class="mono">(c)</td><td class="mono ok">200</td><td><span class="tick">as expected</span></td><td>not on the roster, but the org snapshot vouches for org-bluefield-sensors: rostered now</td></tr>
+<tr><td class="mono">(d)</td><td class="mono ok">403</td><td><span class="tick">as expected</span></td><td>authenticated but not on the roster; the claim alone grants nothing</td></tr>
+<tr><td class="mono">(d2)</td><td class="mono ok">403</td><td><span class="tick">as expected</span></td><td>a known but INACTIVE vendor org is refused the same way</td></tr>
+<tr><td class="mono">(e)</td><td class="mono ok">403</td><td><span class="tick">as expected</span></td><td>auto-roster switches itself off on a stale snapshot; the owner refreshes it</td></tr>
+<tr><td class="mono">(f)</td><td class="mono ok">401</td><td><span class="tick">as expected</span></td><td>a token minted for another client is not for this service</td></tr>
+<tr><td class="mono">(g)</td><td class="mono ok">401</td><td><span class="tick">as expected</span></td><td>iss is compared as an exact string; http://127.0.0.1:9401 is not http://127.0.0.1:9401/</td></tr>
+<tr><td class="mono">(h)</td><td class="mono ok">200</td><td><span class="tick">as expected</span></td><td>the roster decides (org-acme-drones); the token's org is logged as evidence</td></tr>
+<tr><td class="mono">(i)</td><td class="mono ok">401</td><td><span class="tick">as expected</span></td><td>exp is checked; under a live session this is the token_lifespan pin</td></tr>
+</table>
+<p>Audit lines the service wrote (read back from the capture):</p>
+<div class="term"><pre>audit event=auto_rostered email=new.engineer@bluefield-sensors.example org=org-bluefield-sensors org_name=Bluefield Sensors snapshot_age_s=2
+audit event=org_mismatch email=vendor.one@acme-drones.example token_org=org-bluefield-sensors roster_org=org-acme-drones decision=admitted (the roster decides; the claim is evidence)</pre></div>
+<p>Scenario result: <code>result ─ 13 passed, 0 failed</code></p>
+<details><summary>Full captured output — 02-sign-in-and-authorize</summary><div class="term"><pre>
+════════════════════════════════════════════════════════════
+  Sign in and authorize — the provider authenticates, the service authorizes
+════════════════════════════════════════════════════════════
+  A simulated issuer mints tokens; the real service code decides on each one.
+  mode: laptop-local (simulated issuer, real service code)
+
+── Step 1 ─ Start the simulated issuer and the hello service
+  ⓘ honesty: local-issuer/issuer.py stands in for the goatnet's Ory Hydra: it signs whatever
+  ⓘ honesty: claims it is asked for. service/hello_service.py is the real relying-party code.
+  ✓ simulated issuer up at http://127.0.0.1:9401/ (pid 17281)
+  ✓ hello service up at http://127.0.0.1:9402 (pid 17291)
+service config: issuer=http://127.0.0.1:9401/  aud=oauth2-proxy-hello-external  auto-roster vendors=on  snapshot max age=86400s
+roster before:
+    vendor.one@acme-drones.example org-acme-drones vendor-engineer
+    ops.lead@exercise-office.example org-exercise-office owner
+
+── Step 2 ─ /healthz is open (the goatnet's pre-flight and status page probe it)
+  ✓ GET /healthz -&gt; 200 without any token
+
+── Step 3 ─ (a) rostered vendor, verified email -&gt; 200 and the principal
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 200  {"principal": {"email": "vendor.one@acme-drones.example", "email_verified": true, "sub": "def613ee0a7cb56f215cac3a107929a0", "groups": ["ZAGROS-VENDOR"], "org": "org-acme-drones", "role": "vendor-engineer", "roster_source": "roster", "token_org": "org-acme-drones"}, "service": "hello"}
+  ✓ (a) 200 as expected — rostered, verified: admitted; /api/me names the principal from the ROSTER row
+
+── Step 4 ─ (b) email_verified: false -&gt; 403
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 403  {"error": "your email address is not verified", "who_can_fix_it": "the goatnet's identity admins verify the identity at the identity provider; the service cannot"}
+  ✓ (b) 403 as expected — an unverified email is refused even though the person is rostered; the fix is at the identity provider
+
+── Step 5 ─ (c) unrostered, aff.id names an ACTIVE VENDOR in a FRESH snapshot -&gt; auto-rostered 200
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 200  {"principal": {"email": "new.engineer@bluefield-sensors.example", "email_verified": true, "sub": "779847f69a098306348cb6e19675c944", "groups": [], "org": "org-bluefield-sensors", "role": "vendor", "roster_source": "auto-vendor", "token_org": "org-bluefield-sensors"}, "service": "hello"}
+  ✓ (c) 200 as expected — not on the roster, but the org snapshot vouches for org-bluefield-sensors: rostered now
+  ✓ an auto_rostered audit line was written
+    │ audit event=auto_rostered email=new.engineer@bluefield-sensors.example org=org-bluefield-sensors org_name=Bluefield Sensors snapshot_age_s=2
+roster after (the service wrote the new row):
+    vendor.one@acme-drones.example org-acme-drones vendor-engineer
+    ops.lead@exercise-office.example org-exercise-office owner
+    new.engineer@bluefield-sensors.example org-bluefield-sensors vendor
+
+── Step 6 ─ (d) unrostered, aff.id names an org the snapshot does not know -&gt; 403, fail closed
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 403  {"error": "authenticated but not on the roster (aff.id org-nobody-knows is not in the org snapshot)", "who_can_fix_it": "the service owner adds someone@unknown-org.example to roster.json, or refreshes the org snapshot if org-nobody-knows should be an active vendor"}
+  ✓ (d) 403 as expected — authenticated but not on the roster; the claim alone grants nothing
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 403  {"error": "authenticated but not on the roster (aff.id org-old-radios is kind=vendor status=inactive, not an active vendor)", "who_can_fix_it": "the service owner adds retired@old-radios.example to roster.json, or refreshes the org snapshot if org-old-radios should be an active vendor"}
+  ✓ (d2) 403 as expected — a known but INACTIVE vendor org is refused the same way
+
+── Step 7 ─ (e) stale snapshot -&gt; 403 even for an active vendor
+org-snapshot.json re-stamped generated_at = 48h ago (max age 24h)
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 403  {"error": "authenticated but not on the roster (vendor auto-roster is off: the org snapshot is 172800s old, older than 86400s)", "who_can_fix_it": "the service owner refreshes org-snapshot.json from the goat registry, or adds late.arrival@bluefield-sensors.example to roster.json"}
+  ✓ (e) 403 as expected — auto-roster switches itself off on a stale snapshot; the owner refreshes it
+
+── Step 8 ─ (f) wrong audience -&gt; 401
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 401  {"error": "the token's audience 'oauth2-proxy-some-other-service' is not this service's client id 'oauth2-proxy-hello-external'", "who_can_fix_it": "the service owner sets HELLO_CLIENT_ID to client.id in the declaration; the fence must use the same client"}
+  ✓ (f) 401 as expected — a token minted for another client is not for this service
+
+── Step 9 ─ (g) issuer without the trailing slash -&gt; 401
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 401  {"error": "the token's issuer 'http://127.0.0.1:9401' is not the configured issuer 'http://127.0.0.1:9401/' (exact string match, trailing slash included)", "who_can_fix_it": "the service owner sets HELLO_ISSUER to the issuer line the goatnet printed back, slash and all"}
+  ✓ (g) 401 as expected — iss is compared as an exact string; http://127.0.0.1:9401 is not http://127.0.0.1:9401/
+
+── Step 10 ─ (h) aff.id disagrees with the roster row -&gt; 200 plus an org_mismatch audit line
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 200  {"principal": {"email": "vendor.one@acme-drones.example", "email_verified": true, "sub": "def613ee0a7cb56f215cac3a107929a0", "groups": [], "org": "org-acme-drones", "role": "vendor-engineer", "roster_source": "roster", "token_org": "org-bluefield-sensors"}, "service": "hello"}
+  ✓ (h) 200 as expected — the roster decides (org-acme-drones); the token's org is logged as evidence
+  ✓ an org_mismatch audit line was written
+    │ audit event=org_mismatch email=vendor.one@acme-drones.example token_org=org-bluefield-sensors roster_org=org-acme-drones decision=admitted (the roster decides; the claim is evidence)
+
+── Step 11 ─ (i) expired token -&gt; 401
+  → GET /api/me  Authorization: Bearer eyJhbGciOiJSUzI1NiIs…
+  ← 401  {"error": "the token has expired", "who_can_fix_it": "sign in again; if this happens under a live session, the service owner pins client.token_lifespan in the declaration to the fence's cookie lifetime"}
+  ✓ (i) 401 as expected — exp is checked; under a live session this is the token_lifespan pin
+
+── Step 12 ─ Stop both processes
+  ✓ issuer and service stopped (trap also covers Ctrl-C)
+logs: .run/issuer.log  .run/service.log
+
+Next: bash scenarios/03-withdraw/run.sh
+
+── result ─ 13 passed, 0 failed</pre></div></details>
+
+<h2>3. Withdraw</h2>
+<p>Withdrawal is refused while the declaration is enabled; it is the owner's edit, not the platform
+team's flag. Once <code>enabled: false</code>, the goatnet deletes the OAuth2 client and drops the route,
+the certificate name, the DNS record and the status row. The footprint check is what makes that complete:
+it fails any change that names a temporary service outside its own declaration.</p>
+<div class="term"><pre>FAIL: external service 'hello-external' [temporary (retire_after 2035-12-31)] is named outside its declaration — a teardown will not visit these:
+OK: external service 'hello-external' [temporary (retire_after 2035-12-31)] — no footprint outside its declaration</pre></div>
+<p>Scenario result: <code>result ─ 4 passed, 0 failed</code></p>
+<details><summary>Full captured output — 03-withdraw</summary><div class="term"><pre>
+════════════════════════════════════════════════════════════
+  Withdraw — your edit, then one apply, then nothing remembers it
+════════════════════════════════════════════════════════════
+  Withdrawal is refused while the service is enabled; a check keeps the name out of the goatnet.
+  mode: laptop-local (simulated issuer, real service code)
+
+── Step 1 ─ Withdrawal is refused while the service is still enabled
+$ tools/validate-declaration.py examples/hello-external.zagros.yml --state absent
+    │ declaration: examples/hello-external.zagros.yml
+    │ mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+    │ verdict:     REFUSED for state=absent
+    │ reason:      external_service_hello_external is still enabled. Withdrawing a live service is the owner's edit, not the platform team's flag: set `enabled: false` in the declaration (or delete the file), then ask for it to be withdrawn.
+  ✓ withdrawal is refused for an enabled declaration
+
+── Step 2 ─ You set enabled: false (on a copy here)
+$ sed 's/enabled: true/enabled: false/' examples/hello-external.zagros.yml
+    │ 30:  enabled: false                                # false = withdrawn
+$ tools/validate-declaration.py &lt;withdrawn copy&gt; --state absent
+    │ declaration: .run/decl-withdrawn.yml
+    │ mapping:     external_service_hello_external   (file name: external-service-hello-external.yml — the two must agree)
+    │ verdict:     ACCEPTED for state=absent (withdrawn in the declaration)
+    │ the goatnet would then: delete OAuth2 client oauth2-proxy-hello-external; drop the edge route ext-hello and its certificate name; drop the mesh DNS record; drop the status-page row
+  ✓ withdrawal is accepted once the declaration says so
+  ✓ the withdrawn declaration can no longer be applied
+
+── Step 3 ─ What the goatnet removes when the service is withdrawn
+    │ Withdrawal is YOUR edit, not the platform team's flag. You set `enabled: false`
+    │ in the declaration (or delete the file); they then apply it once more, and every
+    │ derived thing disappears because the loops that produced it no longer see the
+    │ service. Applying a removal while the declaration is still enabled is refused —
+    │ that ordering is what stops a live service being switched off by accident.
+what goes, in order:
+  • the OAuth2 client at the goatnet's identity provider    deleted
+  • the route and the certificate name on the goatnet's edge  gone
+  • the mesh DNS record for hello.zagros.&lt;zone&gt;                 gone
+  • the status-page row                                       gone
+  ⓘ honesty: not run here: removing those needs the goatnet itself. Withdraw before you delete
+  ⓘ honesty: the file: a file deleted first leaves its OAuth2 client registered.
+
+── Step 4 ─ The footprint check: a temporary service's name may live only in its declaration
+$ tools/footprint-guard-demo.sh
+    │ == 1. plant a stray reference to each service in an unrelated file (the kind of wiring a teardown never visits)
+    │    platform/monitoring/exporters.yml:1  ... hello-external ...
+    │    platform/monitoring/exporters.yml:6  ... perma-map ...
+    │ 
+    │ == 2. run the check
+    │    FAIL: external service 'hello-external' [temporary (retire_after 2035-12-31)] is named outside its declaration — a teardown will not visit these:
+    │          platform/monitoring/exporters.yml:1
+    │          platform/monitoring/exporters.yml:3
+    │          tokens: ['hello-external', 'hello_external', 'external_service_hello_external']. Move the wiring into the declaration, or drop it; the golden path needs none of it.
+    │    NOTE: external service 'perma-map' [permanent] is named in 1 place(s) outside its declaration (permanent service; not gated)
+    │    exit 1
+    │ 
+    │ == 3. remove the stray lines and run the check again
+    │    OK: external service 'hello-external' [temporary (retire_after 2035-12-31)] — no footprint outside its declaration
+    │    OK: external service 'perma-map' [permanent] — no footprint outside its declaration
+    │    exit 0
+    │ 
+    │ RESULT: the check FAILED on the temporary service's stray reference (file:line named), only NOTED the permanent one, and passed once the reference was gone.
+  ✓ the check failed on a stray reference and passed once it was removed
+
+── Step 5 ─ After withdrawal
+The OAuth2 client, the route, the certificate name, the DNS record and the status row
+are gone. Nothing on the goatnet is named for the service, because the check never
+let it be. Your own host, roster and audit log are yours to keep or delete.
+
+
+── result ─ 4 passed, 0 failed</pre></div></details>
+
+<h2>4. A platform with several endpoints</h2>
+<p>One declaration can carry several endpoint names through <code>hostnames:</code>, and <code>tls:</code>
+decides who terminates. In <code>edge</code> mode the goatnet publishes one route carrying every name and
+puts every name on its own certificate. In <code>partner</code> mode it publishes DNS records pointing at
+the owner's host and nothing else at all &mdash; no route, no backend, no certificate &mdash; so reachability
+control moves to that host. Every hostname is one DNS label; the mesh zone does not nest.</p>
+<p>Scenario result: <code>result ─ 18 passed, 0 failed</code></p>
+<details><summary>Full captured output — 04-partner-platform</summary><div class="term"><pre>
+════════════════════════════════════════════════════════════
+  A platform is not one service on one name
+════════════════════════════════════════════════════════════
+  Fourteen surfaces, one declaration, one label of their own.
+  mode: laptop-local (simulated issuer, real service code)
+
+── Step 1 ─ The declaration
+$ cat examples/northwind-platform.zagros.yml
+    │ external_service_northwind:
+    │   name: northwind                                  # the platform's own label; ONE label, always
+    │   hostnames:                                   # ONE declaration, every surface
+    │     - northwind                                    #   the front door
+    │     - api.northwind
+    │     - audit.northwind
+    │     - authentication.northwind
+    │     - device.northwind
+    │     - provisioning.northwind
+    │     - reports.northwind
+    │     - settings.northwind
+    │     - heartbeat.northwind
+    │     - policy.northwind
+    │     - user.northwind
+    │     - monitoring.northwind
+    │     - demo-console.northwind                       # one level only: a wildcard covers one label
+    │     - keycloak.northwind
+    │   tls: partner                                 # THE OWNER terminates, not the goatnet
+    │   mesh_ip: 100.127.0.76                       # every hostname above resolves here
+    │   mesh_peer: northwind-platform-01                 # its NetBird peer name (`netbird status`)
+    │   acme_delegate: northwind.acme.example.com        # a name in a zone THE OWNER controls: DNS-01 answers there
+    │   health_path: /healthz                        # what the status page probes
+    │   door: authenticated                          # what the OWNER's own fence decides
+    │   # Guard on names that appear NOWHERE else. Not `northwind`: the goatnet's generated
+    │   # mesh zone lists every hostname above, so a bare `northwind` token would fail the
+    │   # footprint check on the very pull request that adds this service.
+    │   guard_tokens: [external-service-northwind, external_service_northwind]
+    │   status:
+    │     name: "Northwind platform"
+    │     desc: "Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate."
+    │     access: public
+    │     category: exercise
+    │     icon: server
+    │     # Which surfaces get a row on the goatnet's External services page. Every
+    │     # hostname above keeps its DNS record either way; this is display only.
+    │     hostnames:
+    │       api.northwind: { list: false }                   # programmatic; nobody browses it
+    │       keycloak.northwind: { list: false }              # the sign-in behind console, not a place to go
+    │       heartbeat.northwind: { health_path: /health }    # answers on its own path
+    │   owner: Northwind Radios (partner) — platform contact in the service roster
+    │   retire_after: "2035-12-31"                   # TEMPORARY: the footprint check is strict
+    │   enabled: true
+
+── Step 2 ─ What the goatnet derives when YOU terminate TLS (tls: partner)
+$ tools/validate-declaration.py examples/northwind-platform.zagros.yml --site-id zagros
+    │ declaration: examples/northwind-platform.zagros.yml
+    │ mapping:     external_service_northwind   (file name: external-service-northwind.yml — the two must agree)
+    │ verdict:     ACCEPTED for state=present (well-formed, enabled, retire_after 2035-12-31 not passed)
+    │ 
+    │ PREVIEW of what the goatnet derives (it does the real rendering; site=zagros, zone=netbird.zagros.example):
+    │   what the goatnet prints back, for you to configure the service from:
+    │     hostname:     https://northwind.zagros.netbird.zagros.example, https://api.northwind.zagros.netbird.zagros.example, https://audit.northwind.zagros.netbird.zagros.example, https://authentication.northwind.zagros.netbird.zagros.example, https://device.northwind.zagros.netbird.zagros.example, https://provisioning.northwind.zagros.netbird.zagros.example, https://reports.northwind.zagros.netbird.zagros.example, https://settings.northwind.zagros.netbird.zagros.example, https://heartbeat.northwind.zagros.netbird.zagros.example, https://policy.northwind.zagros.netbird.zagros.example, https://user.northwind.zagros.netbird.zagros.example, https://monitoring.northwind.zagros.netbird.zagros.example, https://demo-console.northwind.zagros.netbird.zagros.example, https://keycloak.northwind.zagros.netbird.zagros.example
+    │     issuer:       https://oauth2.zagros.netbird.zagros.example/   (trailing slash is load-bearing)
+    │     jwks:         https://oauth2.zagros.netbird.zagros.example/.well-known/jwks.json
+    │     issuer pin:   oauth2.zagros.netbird.zagros.example -&gt; 100.127.0.1   (hosts on the mesh without mesh DNS)
+    │     client:       none — the goatnet manages no OAuth2 client for this service.
+    │                   The service verifies the goatnet's tokens itself against the
+    │                   issuer and JWKS above; nothing to register, nothing to roll.
+    │     door:         authenticated   (what the service's own fence decides; recorded, not enforced here)
+    │   the goatnet's edge (tls: partner) — it publishes NOTHING here:
+    │     no route, no backend, no certificate name. You terminate TLS on your own host
+    │     with your own certificate, so the goatnet never issues one for these names.
+    │     Its mesh-only allowlist is NOT your gate either: reachability control is yours.
+    │   the mesh DNS records (partner mode — every name resolves to YOUR host):
+    │     100.127.0.76 northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 api.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 audit.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 authentication.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 device.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 provisioning.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 reports.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 settings.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 heartbeat.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 policy.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 user.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 monitoring.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 demo-console.northwind.zagros.netbird.zagros.example
+    │     100.127.0.76 keycloak.northwind.zagros.netbird.zagros.example
+    │   the PUBLIC DNS records (partner mode — certificate validation only, no address):
+    │     _acme-challenge.northwind.zagros.netbird.zagros.example  CNAME  northwind.acme.example.com
+    │   your certificate, from Let's Encrypt with the DNS-01 challenge (TXT records written at northwind.acme.example.com):
+    │     northwind.zagros.netbird.zagros.example, *.northwind.zagros.netbird.zagros.example
+    │     lego follows the CNAME by default; acme.sh: --domain-alias northwind.acme.example.com
+    │     the goatnet publishes nothing unless the peer at 100.127.0.76 is named northwind-platform-01
+    │   the status-page rows, on the goatnet's External services page under "Northwind Radios (partner) — platform contact in the service roster"
+    │     (one per listed hostname; a row the goatnet already publishes for a name wins):
+    │     "northwind|Northwind platform|northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-audit|Northwind platform (audit)|audit.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-authentication|Northwind platform (authentication)|authentication.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-device|Northwind platform (device)|device.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-provisioning|Northwind platform (provisioning)|provisioning.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-reports|Northwind platform (reports)|reports.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-settings|Northwind platform (settings)|settings.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-heartbeat|Northwind platform (heartbeat)|heartbeat.northwind.zagros.netbird.zagros.example|external|||/health|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-policy|Northwind platform (policy)|policy.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-user|Northwind platform (user)|user.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-monitoring|Northwind platform (monitoring)|monitoring.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-demo-console|Northwind platform (demo-console)|demo-console.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     (not listed: api.northwind.zagros.netbird.zagros.example — its DNS record and certificate name are unaffected)
+    │     (not listed: keycloak.northwind.zagros.netbird.zagros.example — its DNS record and certificate name are unaffected)
+    │   the footprint check — TEMPORARY (retire_after 2035-12-31): the footprint check FAILS on any of these outside the declaration:
+    │     tokens: ['external-service-northwind', 'external_service_northwind']
+declaration: examples/northwind-platform.zagros.yml
+mapping:     external_service_northwind   (file name: external-service-northwind.yml — the two must agree)
+verdict:     ACCEPTED for state=present (well-formed, enabled, retire_after 2035-12-31 not passed)
+  ✓ the partner-mode declaration is accepted for state=present
+  ⓘ honesty: the goatnet publishes NO route, NO backend and NO certificate for these names.
+  ⓘ honesty: Its mesh-only allowlist is not the gate either: reachability control is yours.
+  ✓ the only public record is the certificate-validation CNAME into the owner's zone
+  ✓ no address is published in public DNS
+  ⓘ honesty: a trusted certificate without serving anything publicly: Let's Encrypt's DNS-01
+  ⓘ honesty: challenge is answered in a zone YOU control, through that one delegation record.
+
+── Step 3 ─ The same declaration with the goatnet's edge in front (tls: edge)
+$ tools/validate-declaration.py &lt;same file, tls dropped, backend added&gt;
+    │ declaration: .run/decl-edge.yml
+    │ mapping:     external_service_northwind   (file name: external-service-northwind.yml — the two must agree)
+    │ verdict:     ACCEPTED for state=present (well-formed, enabled, retire_after 2035-12-31 not passed)
+    │ 
+    │ PREVIEW of what the goatnet derives (it does the real rendering; site=zagros, zone=netbird.zagros.example):
+    │   what the goatnet prints back, for you to configure the service from:
+    │     hostname:     https://northwind.zagros.netbird.zagros.example, https://api.northwind.zagros.netbird.zagros.example, https://audit.northwind.zagros.netbird.zagros.example, https://authentication.northwind.zagros.netbird.zagros.example, https://device.northwind.zagros.netbird.zagros.example, https://provisioning.northwind.zagros.netbird.zagros.example, https://reports.northwind.zagros.netbird.zagros.example, https://settings.northwind.zagros.netbird.zagros.example, https://heartbeat.northwind.zagros.netbird.zagros.example, https://policy.northwind.zagros.netbird.zagros.example, https://user.northwind.zagros.netbird.zagros.example, https://monitoring.northwind.zagros.netbird.zagros.example, https://demo-console.northwind.zagros.netbird.zagros.example, https://keycloak.northwind.zagros.netbird.zagros.example
+    │     issuer:       https://oauth2.zagros.netbird.zagros.example/   (trailing slash is load-bearing)
+    │     jwks:         https://oauth2.zagros.netbird.zagros.example/.well-known/jwks.json
+    │     issuer pin:   oauth2.zagros.netbird.zagros.example -&gt; 100.127.0.1   (hosts on the mesh without mesh DNS)
+    │     client:       none — the goatnet manages no OAuth2 client for this service.
+    │                   The service verifies the goatnet's tokens itself against the
+    │                   issuer and JWKS above; nothing to register, nothing to roll.
+    │     door:         authenticated   (what the service's own fence decides; recorded, not enforced here)
+    │   the goatnet's edge (one route carries every name):
+    │     certificate:  *.zagros.netbird.zagros.example  (covers every flat name; nothing added for them)
+    │                   *.northwind.zagros.netbird.zagros.example  (added once, because this service nests)
+    │     route   ext-northwind: priority 50, matches Host(`northwind.zagros.netbird.zagros.example`, `api.northwind.zagros.netbird.zagros.example`, `audit.northwind.zagros.netbird.zagros.example`, `authentication.northwind.zagros.netbird.zagros.example`, `device.northwind.zagros.netbird.zagros.example`, `provisioning.northwind.zagros.netbird.zagros.example`, `reports.northwind.zagros.netbird.zagros.example`, `settings.northwind.zagros.netbird.zagros.example`, `heartbeat.northwind.zagros.netbird.zagros.example`, `policy.northwind.zagros.netbird.zagros.example`, `user.northwind.zagros.netbird.zagros.example`, `monitoring.northwind.zagros.netbird.zagros.example`, `demo-console.northwind.zagros.netbird.zagros.example`, `keycloak.northwind.zagros.netbird.zagros.example`), mesh-only, certificate issued by the goatnet
+    │     backend ext-northwind: http://100.127.0.76:8443
+    │   the mesh DNS records (edge mode — every name resolves to the goatnet's edge):
+    │     100.127.0.1 northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 api.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 audit.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 authentication.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 device.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 provisioning.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 reports.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 settings.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 heartbeat.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 policy.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 user.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 monitoring.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 demo-console.northwind.zagros.netbird.zagros.example
+    │     100.127.0.1 keycloak.northwind.zagros.netbird.zagros.example
+    │   the status-page rows, on the goatnet's External services page under "Northwind Radios (partner) — platform contact in the service roster"
+    │     (one per listed hostname; a row the goatnet already publishes for a name wins):
+    │     "northwind|Northwind platform|northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-audit|Northwind platform (audit)|audit.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-authentication|Northwind platform (authentication)|authentication.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-device|Northwind platform (device)|device.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-provisioning|Northwind platform (provisioning)|provisioning.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-reports|Northwind platform (reports)|reports.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-settings|Northwind platform (settings)|settings.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-heartbeat|Northwind platform (heartbeat)|heartbeat.northwind.zagros.netbird.zagros.example|external|||/health|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-policy|Northwind platform (policy)|policy.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-user|Northwind platform (user)|user.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-monitoring|Northwind platform (monitoring)|monitoring.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     "northwind-demo-console|Northwind platform (demo-console)|demo-console.northwind.zagros.netbird.zagros.example|external|||/healthz|ui|public|exercise|server|Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate.||true|2|3"
+    │     (not listed: api.northwind.zagros.netbird.zagros.example — its DNS record and certificate name are unaffected)
+    │     (not listed: keycloak.northwind.zagros.netbird.zagros.example — its DNS record and certificate name are unaffected)
+    │   the footprint check — TEMPORARY (retire_after 2035-12-31): the footprint check FAILS on any of these outside the declaration:
+    │     tokens: ['external-service-northwind', 'external_service_northwind']
+declaration: .run/decl-edge.yml
+mapping:     external_service_northwind   (file name: external-service-northwind.yml — the two must agree)
+verdict:     ACCEPTED for state=present (well-formed, enabled, retire_after 2035-12-31 not passed)
+  ✓ the edge-mode declaration is accepted too
+One router now carries every name, and every name joins the mesh-only certificate.
+
+── Step 4 ─ partner mode without mesh_ip is refused
+$ tools/validate-declaration.py &lt;partner mode, mesh_ip removed&gt;
+    │ mapping:     external_service_northwind   (file name: external-service-northwind.yml — the two must agree)
+    │ verdict:     REFUSED for state=present
+    │ reason:      external_service_northwind: `name` is one lowercase DNS label; every entry of `hostnames` (default [name]) is this service's own -- `&lt;name&gt;`, `&lt;name&gt;-&lt;surface&gt;`, or nested one level as `&lt;surface&gt;.&lt;name&gt;` (so `api.northwind` and `northwind-api`, never `api`, `demo.console.northwind` or another service's name) -- with no label over 63 characters; `tls` is edge or partner; in edge mode `backend_url` is http(s)://&lt;MESH IP&gt;:&lt;port&gt; (a 100.64/10 address — the mesh is the outer gate, never a LAN or public address); in partner mode `mesh_ip` is your host's 100.64/10 address, you terminate TLS yourself, and `acme_delegate` is a hostname in a zone YOU control, outside the goatnet's zone (edge mode names none); `mesh_peer`, when set, is your NetBird peer name; `door` is one of ['group-gated', 'authenticated', 'in-app', 'mesh-only']; `owner` is set; a `client:` block needs `id` and `secret_env`; `retire_after` is YYYY-MM-DD.
+  ✓ partner mode with nowhere to point the names is refused
+
+── Step 5 ─ partner mode needs a certificate-validation zone of its own
+  ✓ partner mode without acme_delegate is refused -- no way to a trusted certificate
+  ✓ an acme_delegate inside the goatnet's own zone is refused -- it delegates nothing
+  ✓ edge mode with an acme_delegate is refused -- the goatnet holds that certificate
+  ✓ a malformed mesh_peer is refused
+
+── Step 6 ─ an unknown tls value is refused
+$ tools/validate-declaration.py &lt;tls: passthrough&gt;
+    │ mapping:     external_service_northwind   (file name: external-service-northwind.yml — the two must agree)
+    │ verdict:     REFUSED for state=present
+    │ reason:      external_service_northwind: `name` is one lowercase DNS label; every entry of `hostnames` (default [name]) is this service's own -- `&lt;name&gt;`, `&lt;name&gt;-&lt;surface&gt;`, or nested one level as `&lt;surface&gt;.&lt;name&gt;` (so `api.northwind` and `northwind-api`, never `api`, `demo.console.northwind` or another service's name) -- with no label over 63 characters; `tls` is edge or partner; in edge mode `backend_url` is http(s)://&lt;MESH IP&gt;:&lt;port&gt; (a 100.64/10 address — the mesh is the outer gate, never a LAN or public address); in partner mode `mesh_ip` is your host's 100.64/10 address, you terminate TLS yourself, and `acme_delegate` is a hostname in a zone YOU control, outside the goatnet's zone (edge mode names none); `mesh_peer`, when set, is your NetBird peer name; `door` is one of ['group-gated', 'authenticated', 'in-app', 'mesh-only']; `owner` is set; a `client:` block needs `id` and `secret_env`; `retire_after` is YYYY-MM-DD.
+  ✓ tls is a closed set: edge or partner
+
+── Step 7 ─ Only this service's own names, and only one level of nesting
+Each is refused by the same rule the goatnet applies before anything is published:
+  ✓ a bare generic label (api) is refused -- it would take a goatnet-wide name
+  ✓ nesting two levels (demo.console.northwind) is refused -- write demo-console.northwind
+  ✓ nesting under another service's name (api.otherco) is refused
+  ✓ another service's prefix (otherco-api) is refused
+  ✓ an uppercase or empty label (API..northwind) is refused
+  ✓ a label over 63 characters is refused
+
+── Step 8 ─ What the certificate carries
+$ tools/validate-declaration.py &lt;edge, flat: northwind, northwind-api, northwind-audit&gt;
+    │     certificate:  *.zagros.netbird.zagros.example  (covers every flat name; nothing added for them)
+    │     route   ext-northwind: priority 50, matches Host(`northwind.zagros.netbird.zagros.example`, `northwind-api.zagros.netbird.zagros.example`, `northwind-audit.zagros.netbird.zagros.example`), mesh-only, certificate issued by the goatnet
+$ tools/validate-declaration.py &lt;edge, nested: northwind, api.northwind, ...&gt;
+    │     certificate:  *.zagros.netbird.zagros.example  (covers every flat name; nothing added for them)
+    │                   *.northwind.zagros.netbird.zagros.example  (added once, because this service nests)
+  ✓ flat names add nothing to the certificate beyond the site wildcard
+  ✓ a nesting service adds exactly one certificate name of its own
+  ⓘ honesty: the certificate grows with services that NEST, not with services or hostnames:
+  ⓘ honesty: a thousand flat services add nothing; each nesting service adds one name.
+  ⓘ honesty: DNS still has no wildcard -- every name is a record the goatnet writes out.
+
+── result ─ 18 passed, 0 failed</pre></div></details>
+
+<h2>Orientation</h2>
+<details><summary>Full captured output — 00-orient</summary><div class="term"><pre>
+════════════════════════════════════════════════════════════
+  Orient — a service the goatnet does not run borrows its sign-in
+════════════════════════════════════════════════════════════
+  One declaration in, one declaration out, no footprint left behind.
+  mode: laptop-local (simulated issuer, real service code)
+
+── Step 1 ─ The setting
+A goatnet runs an identity plane: people sign in once at the site's Ory Hydra
+and get an id_token that names them (sub, email, groups, and on some goatnets
+aff.id, their organisation). Core services on the management host use it.
+An EXTERNAL service is one the goatnet does not build or deploy: it runs on its own
+host, is not core, and is often temporary — an event registry, a demo.
+It still wants goatnet sign-in, a name on the goatnet's edge, and a status row.
+
+── Step 2 ─ The three things this repo shows
+  • declare:   one YAML file is the service's whole goatnet-side footprint  (scenario 01)
+  • verify:    the service checks the goatnet's tokens itself and authorizes
+  •            from its own roster; claims grant nothing on their own  (scenario 02)
+  • withdraw:  the same file, marked enabled: false, and a check refuses any
+  •            stray reference to the service's name elsewhere  (scenario 03)
+
+── Step 3 ─ The trust rule
+The provider authenticates. The service authorizes. A token's claims are
+evidence, never a grant: the service decides from its own records.
+
+── Step 4 ─ Why the fence lives on the service's host
+The host joins the mesh in the EXTERNAL-INFRA tier, which every role group
+reaches directly. A fence on the management host in front of it would be a
+fence with a gap beside it. So the service (or an oauth2-proxy beside it)
+verifies signature, issuer, audience and expiry on every request, and binds
+its mesh IP, never 0.0.0.0.
+
+── Step 5 ─ The boundary rule
+A temporary service's name may appear in the goatnet's configuration ONLY in
+its own declaration file. A CI check fails any change that names it anywhere
+else. That is what makes withdrawal complete rather than hopeful.
+
+── Step 6 ─ Prerequisites
+  ✓ python3 + curl + PyJWT/cryptography/PyYAML present
+  ⓘ honesty: the issuer used by scenario 02 is SIMULATED (local-issuer/); the apply step,
+  ⓘ honesty: the edge and the checks run on the goatnet — docs/honesty-matrix.md grades each piece.
+
+── Step 7 ─ What's next
+  • 01-declare                 validate the declaration; see what it derives; see refusals
+  • 02-sign-in-and-authorize   start the issuer + service, walk every rule with real tokens
+  • 03-withdraw                mark it withdrawn; see what is removed; run the footprint check
+
+Run them in order: bash scenarios/01-declare/run.sh</pre></div></details>
+
+<h2>Honesty matrix</h2>
+<p class="note">Three grades. REAL runs here. REAL-BUT-ELSEWHERE runs on the goatnet. SIMULATED is a stand-in and says what it does not do.</p>
+<table>
+<tr><th>Element</th><th>Grade</th><th>Where, and what is true</th></tr>
+<tr><td>The relying party: signature, iss, aud, exp, email, email_verified, roster, vendor auto-roster, snapshot age, org_mismatch audit</td><td><span class="pill real">REAL</span></td><td>service/hello_service.py; scenario 02 asserts every status code</td></tr>
+<tr><td>/healthz open; /api/me returns the principal</td><td><span class="pill real">REAL</span></td><td>scenario 02</td></tr>
+<tr><td>Roster and org snapshot</td><td><span class="pill real">REAL files</span></td><td>illustrative content; not exported from a goat registry</td></tr>
+<tr><td>Declaration validation</td><td><span class="pill real">REAL, copied</span></td><td>the same rules the goatnet applies before anything is changed</td></tr>
+<tr><td>The derived preview</td><td><span class="pill else">REAL-BUT-ELSEWHERE</span></td><td>the goatnet renders the route, the certificate, the DNS records and the status rows; this repo prints their shapes</td></tr>
+<tr><td>The footprint check</td><td><span class="pill real">REAL, copied</span></td><td>the goatnet's check reproduced &mdash; same glob shape, file-name rule, tokens and messages &mdash; on a scratch tree</td></tr>
+<tr><td>The OIDC issuer</td><td><span class="pill sim">SIMULATED</span></td><td>local-issuer/issuer.py stands in for Ory Hydra: real JWKS and RS256 signatures, no login flow, mints any claims asked for</td></tr>
+<tr><td>OAuth2 client register / pin / delete; pre-flight; edge, DNS push, status page</td><td><span class="pill else">REAL-BUT-ELSEWHERE</span></td><td>all of it happens on the goatnet when a declaration is applied; not run here</td></tr>
+<tr><td>Machine enrollment of the host</td><td><span class="pill else">REAL-BUT-ELSEWHERE</span></td><td>your custodian enrolls it; described in docs/do-it-for-real.md</td></tr>
+<tr><td>The aff.id claim on a goatnet</td><td><span class="pill else">ELSEWHERE, off by default</span></td><td>a per-goatnet switch, off by default; the simulated issuer mints it so the rule can be shown</td></tr>
+<tr><td>email_verified on console-minted identities</td><td><span class="pill sim">depends on the goatnet</span></td><td>identities minted without email_verified: true are refused until verified at the identity provider</td></tr>
+</table>
+
+<p class="meta">This report is regenerated by <code>report/generate-report.sh</code>.</p>
+</div></body></html>

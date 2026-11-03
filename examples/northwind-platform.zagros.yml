@@ -1,0 +1,51 @@
+# WORKED EXAMPLE for scenario 04 -- never proposed to a goatnet.
+#
+# Northwind Radios, an invented partner, runs a platform with several endpoints,
+# nested under a label of its own, and terminates its own TLS. Every entry ends in `northwind`, so every surface lands under
+# northwind.<site>.<zone> rather than claiming `api`, `policy`, `user` and
+# `monitoring` as bare labels in a namespace the whole goatnet shares.
+#
+# The mesh address, peer name and delegation zone are documentation examples.
+---
+external_service_northwind:
+  name: northwind                                  # the platform's own label; ONE label, always
+  hostnames:                                   # ONE declaration, every surface
+    - northwind                                    #   the front door
+    - api.northwind
+    - audit.northwind
+    - authentication.northwind
+    - device.northwind
+    - provisioning.northwind
+    - reports.northwind
+    - settings.northwind
+    - heartbeat.northwind
+    - policy.northwind
+    - user.northwind
+    - monitoring.northwind
+    - demo-console.northwind                       # one level only: a wildcard covers one label
+    - keycloak.northwind
+  tls: partner                                 # THE OWNER terminates, not the goatnet
+  mesh_ip: 100.127.0.76                       # every hostname above resolves here
+  mesh_peer: northwind-platform-01                 # its NetBird peer name (`netbird status`)
+  acme_delegate: northwind.acme.example.com        # a name in a zone THE OWNER controls: DNS-01 answers there
+  health_path: /healthz                        # what the status page probes
+  door: authenticated                          # what the OWNER's own fence decides
+  # Guard on names that appear NOWHERE else. Not `northwind`: the goatnet's generated
+  # mesh zone lists every hostname above, so a bare `northwind` token would fail the
+  # footprint check on the very pull request that adds this service.
+  guard_tokens: [external-service-northwind, external_service_northwind]
+  status:
+    name: "Northwind platform"
+    desc: "Partner-hosted platform. Its surfaces resolve to the partner's own mesh host, which serves TLS with its own certificate."
+    access: public
+    category: exercise
+    icon: server
+    # Which surfaces get a row on the goatnet's External services page. Every
+    # hostname above keeps its DNS record either way; this is display only.
+    hostnames:
+      api.northwind: { list: false }                   # programmatic; nobody browses it
+      keycloak.northwind: { list: false }              # the sign-in behind console, not a place to go
+      heartbeat.northwind: { health_path: /health }    # answers on its own path
+  owner: Northwind Radios (partner) — platform contact in the service roster
+  retire_after: "2035-12-31"                   # TEMPORARY: the footprint check is strict
+  enabled: true
