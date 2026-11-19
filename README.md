@@ -1,5 +1,10 @@
 # hello-galaxy-external-service
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/one-declaration-dark.svg">
+  <img src="docs/figures/one-declaration-light.svg" width="760" alt="One declaration file, hello-external.zagros.yml, is validated and refused for a LAN backend, an unknown door or a passed retire date. From it the goatnet derives a hostname, an issuer and JWKS, an OAuth2 client, an edge route, a DNS record and a status-page row. The service verifies each token itself and authorizes from its own roster: nine test tokens give 200, 403 or 401 for stated reasons. Setting enabled: false withdraws it and the goatnet removes everything it derived.">
+</picture>
+
 **A hands-on demonstration of goat's external service golden path. A service the
 goatnet does not run borrows the goatnet's sign-in from one declaration file, verifies
 the tokens itself, authorizes from its own roster, and is withdrawn the same way with
