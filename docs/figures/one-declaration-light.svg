@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 516.9" width="880" height="516.9" role="img" aria-label="One declaration file, hello-external.zagros.yml, is validated and refused for a LAN backend, an unknown door or a passed retire date. From it the goatnet derives a hostname, an issuer and JWKS, an OAuth2 client, an edge route, a DNS record and a status-page row. The service verifies each token itself and authorizes from its own roster: nine test tokens give 200, 403 or 401 for stated reasons. Setting enabled: false withdraws it and the goatnet removes everything it derived."><title>One file gives a service the goatnet's sign-in</title><style>svg{--ink:#191c22; --quiet:#555c68; --rule:#dde1e6; --line:#878f9c; --paper:#ffffff; --panel:#f5f6f8; --accent:#0b5a72; --accent-soft:#e2f0f4; --on-accent:#ffffff; --good:#2a6a35; --good-bg:#e4f3e6; --warn:#875200; --warn-bg:#fcf0d7; --info:#285d9e; --info-bg:#e6eff9; --crit:#b0261d; --crit-bg:#fbeae8; font-family:'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif}.t{fill:var(--ink)} .tq{fill:var(--quiet)} .ta{fill:var(--accent)} .tg{fill:var(--good)}
+.tw{fill:var(--warn)} .ti{fill:var(--info)} .tc{fill:var(--crit)} .ton{fill:var(--on-accent)}
+.bx{fill:var(--panel);stroke:var(--line);stroke-width:1.25} .bxa{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.bxg{fill:var(--good-bg);stroke:var(--good);stroke-width:1.25} .bxc{fill:var(--crit-bg);stroke:var(--crit);stroke-width:1.25}
+.bxw{fill:var(--warn-bg);stroke:var(--warn);stroke-width:1.25} .bxi{fill:var(--info-bg);stroke:var(--info);stroke-width:1.25}
+.zone{fill:none;stroke:var(--line);stroke-width:1.25;stroke-dasharray:6 5}
+.ln{stroke:var(--line);stroke-width:1.5;fill:none} .lna{stroke:var(--accent);stroke-width:2.25;fill:none}
+.lng{stroke:var(--good);stroke-width:2;fill:none} .lnc{stroke:var(--crit);stroke-width:2;fill:none;stroke-dasharray:4 4}
+.lni{stroke:var(--info);stroke-width:2;fill:none} .lnr{stroke:var(--rule);stroke-width:1;fill:none}
+.fa{fill:var(--accent)} .fl{fill:var(--line)} .fg{fill:var(--good)} .fc{fill:var(--crit)} .fi{fill:var(--info)}
+.halo{paint-order:stroke fill;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}</style>
+<text x="24" y="38" class="t" font-size="20" font-weight="700" data-role="note">One file gives a service the goatnet's sign-in</text>
+<text x="24" y="66" class="tq" font-size="15" data-role="note">A service the goatnet does not run declares itself in one YAML file. The goatnet signs people in; the service checks</text>
+<text x="24" y="87" class="tq" font-size="15" data-role="note">every token itself and decides from its own roster.</text>
+<rect x="24" y="123" width="252" height="159.9" rx="8" class="bxa"/>
+<rect x="36" y="136.6" width="31" height="30" rx="15" class="fa"/>
+<text x="51.5" y="156.2" class="ton" font-size="13" text-anchor="middle" font-weight="700">01</text>
+<text x="75" y="157" class="t" font-size="15" font-weight="700">You write one file</text>
+<text x="36" y="182.7" class="tq" font-size="13" font-family="Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace">hello-external.zagros.yml</text>
+<text x="36" y="206.6" class="tq" font-size="14">name, backend, door, client,</text>
+<text x="36" y="226" class="tq" font-size="14">status, owner, retire date</text>
+<text x="36" y="250.3" class="tq" font-size="14">refused for a LAN backend,</text>
+<text x="36" y="269.6" class="tq" font-size="14">unknown door or past retire date</text>
+<rect x="314" y="123" width="252" height="155.9" rx="8" class="bx"/>
+<text x="326" y="150" class="t" font-size="15" font-weight="700">The goatnet derives</text>
+<text x="326" y="168.7" class="tq" font-size="13" font-family="Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace">hello.zagros.&lt;zone&gt;</text>
+<text x="326" y="192.6" class="tq" font-size="14">issuer, JWKS, OAuth2 client</text>
+<text x="326" y="217" class="tq" font-size="14">edge route and certificate name</text>
+<text x="326" y="241.3" class="tq" font-size="14">mesh DNS record</text>
+<text x="326" y="265.6" class="tq" font-size="14">a row on the status page</text>
+<rect x="604" y="123" width="252" height="123" rx="8" class="bx"/>
+<text x="616" y="150" class="t" font-size="15" font-weight="700">Your service decides</text>
+<text x="616" y="169.7" class="tq" font-size="14">verifies each token itself: issuer,</text>
+<text x="616" y="189" class="tq" font-size="14">audience, expiry</text>
+<text x="616" y="213.3" class="tq" font-size="14">authorizes from its own roster; a</text>
+<text x="616" y="232.7" class="tq" font-size="14">claim is evidence, not a grant</text>
+<path d="M278 151L312 151" class="lna"/>
+<path d="M312 151L302 156L302 146z" class="fa"/>
+<path d="M568 151L602 151" class="lna"/>
+<path d="M602 151L592 156L592 146z" class="fa"/>
+<rect x="24" y="301.9" width="31" height="30" rx="15" class="fa"/>
+<text x="39.5" y="321.5" class="ton" font-size="13" text-anchor="middle" font-weight="700">02</text>
+<text x="65" y="321.9" class="t" font-size="15">Nine test tokens against the service, each with its answer:</text>
+<rect x="24" y="338.9" width="93.1" height="30" rx="6" class="bxg"/>
+<text x="32" y="358.4" class="tg" font-size="13">200 rostered</text>
+<rect x="125.1" y="338.9" width="155.8" height="30" rx="6" class="bxg"/>
+<text x="133.1" y="358.4" class="tg" font-size="13">200 vendor auto-roster</text>
+<rect x="288.9" y="338.9" width="178.8" height="30" rx="6" class="bxg"/>
+<text x="296.9" y="358.4" class="tg" font-size="13">200 org mismatch, audited</text>
+<rect x="475.7" y="338.9" width="138" height="30" rx="6" class="bxc"/>
+<text x="483.7" y="358.4" class="tc" font-size="13">403 unverified email</text>
+<rect x="621.7" y="338.9" width="121.2" height="30" rx="6" class="bxc"/>
+<text x="629.7" y="358.4" class="tc" font-size="13">403 unknown org</text>
+<rect x="24" y="376.9" width="131.2" height="30" rx="6" class="bxc"/>
+<text x="32" y="396.4" class="tc" font-size="13">403 stale snapshot</text>
+<rect x="163.2" y="376.9" width="139.7" height="30" rx="6" class="bxc"/>
+<text x="171.2" y="396.4" class="tc" font-size="13">401 wrong audience</text>
+<rect x="311" y="376.9" width="162" height="30" rx="6" class="bxc"/>
+<text x="319" y="396.4" class="tc" font-size="13">401 issuer without slash</text>
+<rect x="481" y="376.9" width="87.9" height="30" rx="6" class="bxc"/>
+<text x="489" y="396.4" class="tc" font-size="13">401 expired</text>
+<rect x="24" y="421.9" width="31" height="30" rx="15" class="fa"/>
+<text x="39.5" y="441.5" class="ton" font-size="13" text-anchor="middle" font-weight="700">03</text>
+<text x="65" y="441.9" class="t" font-size="15">Withdraw: enabled: false, and the goatnet removes all it derived</text>
+<text x="65" y="462.9" class="tq" font-size="14" data-role="note">A footprint check fails any change that still names the service outside its file.</text>
+<rect x="24" y="479.9" width="31" height="30" rx="15" class="fa"/>
+<text x="39.5" y="499.5" class="ton" font-size="13" text-anchor="middle" font-weight="700">04</text>
+<text x="65" y="499.9" class="t" font-size="15" data-role="note">A platform: one declaration carries fourteen endpoint names under one name</text>
+</svg>
